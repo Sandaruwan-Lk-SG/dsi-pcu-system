@@ -1,6 +1,6 @@
 // js/api.js
 // ⚠️ මෙහි BASE URL එක දාන්න ඔය backend එක (Railway URL එක)
-const BASE = 'https://dsipcubackendenterdata-production.up.railway.app';
+const BASE = 'dsi-pcu-system-production.up.railway.app';
 
 async function request(path, opts = {}) {
   const headers = opts.headers || {};

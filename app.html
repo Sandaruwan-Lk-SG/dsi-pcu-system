@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>DSI Inventory — App</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    /* Hide Scrollbar but allow scrolling */
+    ::-webkit-scrollbar { width: 0px; background: transparent; }
+    
+    .fade-in { animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+    /* Glass Effect for Dock */
+    .glass-dock {
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Active Tab Glow */
+    .nav-active i {
+        color: #60a5fa; /* Blue-400 */
+        text-shadow: 0 0 15px rgba(96, 165, 250, 0.6);
+        transform: translateY(-4px);
+    }
+    .nav-active span {
+        color: white;
+        font-weight: 600;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[#0B1120] text-slate-300 relative selection:bg-blue-500 selection:text-white">
+
+  <div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+    <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[100px]"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[100px]"></div>
+  </div>
+
+  <header class="fixed top-0 w-full z-40 px-6 py-4 flex justify-between items-center bg-gradient-to-b from-[#0B1120] to-transparent">
+    <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+            <i class="fa-solid fa-box-open text-lg"></i>
+        </div>
+        <div>
+            <h1 class="text-white font-bold text-lg leading-tight">DSI Inventory</h1>
+            <p id="currentDate" class="text-xs text-slate-500 font-medium"></p>
+        </div>
+    </div>
+    
+    <div id="userInfo" class="flex items-center gap-3 bg-white/5 border border-white/10 px-3 py-1.5 rounded-full backdrop-blur-sm hover:bg-white/10 transition cursor-pointer">
+        </div>
+  </header>
+
+  <main class="pt-24 pb-32 px-4 md:px-6 max-w-5xl mx-auto">
+      
+      <section id="dash" class="page-section fade-in">
+        <h2 class="text-2xl text-white font-bold mb-6">Overview</h2>
+        <div id="summary" class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div class="h-40 rounded-3xl bg-slate-800/50 animate-pulse"></div>
+            <div class="h-40 rounded-3xl bg-slate-800/50 animate-pulse"></div>
+            <div class="h-40 rounded-3xl bg-slate-800/50 animate-pulse"></div>
+        </div>
+      </section>
+
+      <section id="stock" class="page-section hidden fade-in">
+        <div class="flex justify-between items-end mb-6">
+            <h2 class="text-2xl text-white font-bold">Stock Operations</h2>
+        </div>
+        <div class="bg-slate-800/40 border border-white/5 rounded-3xl p-1 overflow-hidden backdrop-blur-sm">
+            <div class="bg-[#0B1120]/80 rounded-[20px] p-6 border border-white/5">
+                <div id="stockArea"></div>
+            </div>
+        </div>
+      </section>
+
+      <section id="admin" class="page-section hidden fade-in">
+        <h2 class="text-2xl text-white font-bold mb-6">Add New Item</h2>
+        <div class="max-w-2xl mx-auto bg-slate-800/40 border border-white/5 rounded-3xl p-1 overflow-hidden backdrop-blur-sm">
+            <div class="bg-[#0B1120]/80 rounded-[20px] p-6 md:p-8 border border-white/5">
+                 <div id="adminArea"></div>
+            </div>
+        </div>
+      </section>
+
+      <section id="reports" class="page-section hidden fade-in">
+        <h2 class="text-2xl text-white font-bold mb-6">System Reports</h2>
+        <div class="bg-slate-800/40 border border-white/5 rounded-3xl p-1 overflow-hidden backdrop-blur-sm">
+            <div class="bg-[#0B1120]/80 rounded-[20px] p-6 border border-white/5">
+                <div id="reportsArea"></div>
+            </div>
+        </div>
+      </section>
+
+  </main>
+
+  <div class="fixed bottom-6 left-0 w-full flex justify-center z-50">
+    <nav class="glass-dock rounded-full px-2 py-2 flex items-center gap-1 shadow-2xl shadow-black/50 scale-90 md:scale-100 transition-transform">
+        
+        <button class="nav-btn group relative px-6 py-3 rounded-full flex flex-col items-center gap-1 transition-all duration-300 hover:bg-white/5 nav-active" data-target="dash">
+            <i class="fa-solid fa-chart-pie text-xl text-slate-400 transition-all duration-300"></i>
+            <span class="text-[10px] text-slate-500 transition-colors">Home</span>
+            <span class="absolute -bottom-1 w-1 h-1 bg-blue-500 rounded-full opacity-0 group-[.nav-active]:opacity-100 transition-opacity"></span>
+        </button>
+
+        <button class="nav-btn group relative px-6 py-3 rounded-full flex flex-col items-center gap-1 transition-all duration-300 hover:bg-white/5" data-target="stock">
+            <i class="fa-solid fa-truck-ramp-box text-xl text-slate-400 transition-all duration-300"></i>
+            <span class="text-[10px] text-slate-500 transition-colors">Stock</span>
+        </button>
+
+        <button class="nav-btn group relative -mt-6 mx-2" data-target="admin">
+            <div class="w-14 h-14 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/40 border-4 border-[#0B1120] transform group-hover:scale-110 transition-transform">
+                <i class="fa-solid fa-plus text-white text-xl"></i>
+            </div>
+        </button>
+
+        <button class="nav-btn group relative px-6 py-3 rounded-full flex flex-col items-center gap-1 transition-all duration-300 hover:bg-white/5" data-target="reports">
+            <i class="fa-solid fa-file-invoice text-xl text-slate-400 transition-all duration-300"></i>
+            <span class="text-[10px] text-slate-500 transition-colors">Reports</span>
+        </button>
+
+        <button id="logoutBtn" class="group relative px-6 py-3 rounded-full flex flex-col items-center gap-1 transition-all duration-300 hover:bg-rose-500/10 hover:text-rose-500">
+            <i class="fa-solid fa-power-off text-xl text-slate-400 group-hover:text-rose-500 transition-all duration-300"></i>
+            <span class="text-[10px] text-slate-500 group-hover:text-rose-400 transition-colors">Exit</span>
+        </button>
+
+    </nav>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/stock.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/reports.js"></script>
+
+  <script>
+    // --- UI Logic ---
+    const navBtns = document.querySelectorAll('.nav-btn');
+    
+    // Date
+    document.getElementById('currentDate').innerText = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+
+    // Navigation Click Handling
+    navBtns.forEach(b => b.addEventListener('click', () => {
+      // 1. Hide all sections
+      document.querySelectorAll('.page-section').forEach(s => {
+        s.classList.add('hidden');
+        s.classList.remove('fade-in');
+      });
+
+      // 2. Visual Updates for Nav
+      navBtns.forEach(btn => btn.classList.remove('nav-active'));
+      // Only add active style if it's not the big round button (optional logic, but looks cleaner)
+      b.classList.add('nav-active');
+
+      // 3. Show Target
+      const t = b.dataset.target;
+      const targetSection = document.getElementById(t);
+      if(targetSection) {
+          targetSection.classList.remove('hidden');
+          // Trigger animation
+          setTimeout(() => targetSection.classList.add('fade-in'), 10);
+      }
+      
+      // 4. Trigger Loads
+      if (t === 'stock') loadStockUI();
+      if (t === 'admin') loadAdminUI();
+      if (t === 'reports') loadReportsUI();
+    }));
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      // Small confirmation effect
+      const btn = document.getElementById('logoutBtn');
+      btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin text-xl"></i>';
+      setTimeout(() => {
+          logout();
+          window.location.href = 'index.html';
+      }, 500);
+    });
+
+    // Init App
+    (async function initApp(){
+      const user = getAuthUser();
+      if (!user) { window.location.href = 'index.html'; return; }
+      
+      // Minimal User Info in Header
+      document.getElementById('userInfo').innerHTML = `
+        <div class="text-right hidden sm:block">
+            <div class="text-xs text-slate-400 uppercase tracking-wider font-bold">${escapeHtml(user.role)}</div>
+            <div class="text-sm font-semibold text-white leading-none">${escapeHtml(user.username)}</div>
+        </div>
+        <div class="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold ring-2 ring-[#0B1120]">
+            ${user.username.charAt(0).toUpperCase()}
+        </div>
+      `;
+
+      try {
+        const items = await apiGet('/api/items?aggregate=true');
+        const reports = await apiGet('/api/reports?status=Open').catch(()=>[]);
+        const summary = document.getElementById('summary');
+        
+        const itemCount = Array.isArray(items) ? items.length : (items.total || '-');
+        const reportCount = Array.isArray(reports) ? reports.length : (reports.total || '-');
+
+        // GLASS CARDS FOR DASHBOARD
+        summary.innerHTML = `
+          <div class="relative group p-6 rounded-3xl bg-blue-600 overflow-hidden text-white shadow-2xl shadow-blue-900/40 transition-transform hover:-translate-y-1">
+            <div class="absolute -right-6 -top-6 w-32 h-32 bg-white/20 rounded-full blur-2xl group-hover:blur-3xl transition-all"></div>
+            <div class="relative z-10">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="p-3 bg-white/20 rounded-2xl backdrop-blur-sm">
+                        <i class="fa-solid fa-cubes text-xl"></i>
+                    </div>
+                    <span class="text-xs font-bold bg-black/20 px-2 py-1 rounded-lg">LIVE</span>
+                </div>
+                <h3 class="text-4xl font-bold mb-1">${itemCount}</h3>
+                <p class="text-blue-100 text-sm font-medium">Total Items in Stock</p>
+            </div>
+          </div>
+
+          <div class="relative group p-6 rounded-3xl bg-[#1E293B] border border-white/5 overflow-hidden text-white shadow-xl transition-transform hover:-translate-y-1">
+             <div class="absolute right-0 top-0 w-32 h-32 bg-rose-500/10 rounded-full blur-2xl"></div>
+             <div class="relative z-10">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="p-3 bg-rose-500/20 text-rose-500 rounded-2xl backdrop-blur-sm">
+                        <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+                    </div>
+                </div>
+                <h3 class="text-4xl font-bold mb-1">${reportCount}</h3>
+                <p class="text-slate-400 text-sm font-medium">Pending Reports</p>
+            </div>
+          </div>
+
+          <div class="relative group p-6 rounded-3xl bg-[#1E293B] border border-white/5 overflow-hidden text-white shadow-xl transition-transform hover:-translate-y-1">
+             <div class="relative z-10">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="p-3 bg-emerald-500/20 text-emerald-500 rounded-2xl backdrop-blur-sm">
+                        <i class="fa-solid fa-check text-xl"></i>
+                    </div>
+                </div>
+                <h3 class="text-4xl font-bold mb-1 text-emerald-400">Good</h3>
+                <p class="text-slate-400 text-sm font-medium">System Health</p>
+            </div>
+          </div>
+        `;
+      } catch (e) {
+        console.error(e);
+      }
+    })();
+    function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m])); }
+  </script>
+</body>
+</html>
